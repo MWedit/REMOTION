@@ -1,10 +1,23 @@
 import {Composition} from 'remotion';
 import {HelloWorld} from './HelloWorld';
 import {PersonasReel} from './personas/PersonasReel';
+import {PersonasGlobe} from './personas/PersonasGlobe';
 
 export const Root: React.FC = () => {
 	return (
 		<>
+			<Composition
+				id="PersonasGlobe"
+				component={PersonasGlobe}
+				durationInFrames={180}
+				width={1080}
+				height={1920}
+				fps={30}
+				defaultProps={{
+					title: '+10 mil',
+					subtitle: 'personas',
+				}}
+			/>
 			<Composition
 				id="PersonasReel"
 				component={PersonasReel}
