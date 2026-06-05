@@ -1,49 +1,68 @@
 import {interpolate, useCurrentFrame} from 'remotion';
 import {EASE_OUT, glow, LUX} from '../lux';
-import {Kicker, LuxLayout, useReveal} from '../LuxScaffold';
+import {Kicker, LuxLayout} from '../LuxScaffold';
+import {AnimatedLetters, Particles, useSheen} from '../motion';
 
-// Elegant title reveal — "COPY TRADING" with a thin drawing underline.
+// Energetic title — "COPY TRADING" pops in letter-by-letter with a sweeping
+// sheen on the underline.
 export const CopyTradingTitle: React.FC = () => {
 	const frame = useCurrentFrame();
-	const hero = useReveal(8, 28);
 
-	// letter-spacing settles in slowly
-	const tracking = interpolate(frame, [8, 40], [22, 8], {
+	const underline = interpolate(frame, [16, 36], [0, 1], {
 		extrapolateLeft: 'clamp',
 		extrapolateRight: 'clamp',
 		easing: EASE_OUT,
 	});
-	const underline = interpolate(frame, [20, 52], [0, 1], {
-		extrapolateLeft: 'clamp',
-		extrapolateRight: 'clamp',
-		easing: EASE_OUT,
-	});
+	const sheen = useSheen(38, 45);
 
 	return (
-		<LuxLayout>
-			<Kicker start={4}>La alternativa</Kicker>
+		<LuxLayout decor={<Particles count={22} seed="ct" />}>
+			<Kicker start={2}>La alternativa</Kicker>
+
+			<AnimatedLetters
+				text="COPY TRADING"
+				start={6}
+				stagger={2.4}
+				fontSize={96}
+				fontWeight={400}
+				letterSpacing={4}
+				glowPx={18}
+			/>
+
 			<div
 				style={{
-					color: LUX.neon,
-					fontSize: 118,
-					fontWeight: 300,
-					letterSpacing: tracking,
-					opacity: hero.opacity,
-					transform: `translateY(${hero.y}px)`,
-					filter: glow(14, 0.4),
+					position: 'relative',
+					width: 540,
+					height: 3,
+					overflow: 'hidden',
+					borderRadius: 2,
 				}}
 			>
-				COPY TRADING
+				<div
+					style={{
+						width: '100%',
+						height: '100%',
+						background: LUX.line,
+						transform: `scaleX(${underline})`,
+						filter: glow(8, 0.5),
+					}}
+				/>
+				{sheen >= 0 ? (
+					<div
+						style={{
+							position: 'absolute',
+							top: 0,
+							left: `${sheen * 100}%`,
+							width: 120,
+							height: '100%',
+							marginLeft: -60,
+							background:
+								'linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent)',
+							filter: glow(10, 0.9),
+						}}
+					/>
+				) : null}
 			</div>
-			<div
-				style={{
-					width: 520,
-					height: 2,
-					background: LUX.line,
-					transform: `scaleX(${underline})`,
-					filter: glow(8, 0.5),
-				}}
-			/>
 		</LuxLayout>
 	);
 };

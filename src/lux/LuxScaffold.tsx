@@ -2,7 +2,11 @@ import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
 import {EASE_OUT, FONT, LUX} from './lux';
 
 // Centred column, transparent (PremiumOverlay paints the matte background).
-export const LuxLayout: React.FC<{children: React.ReactNode}> = ({children}) => (
+// `decor` renders absolutely behind the column (particles, rings, etc.).
+export const LuxLayout: React.FC<{children: React.ReactNode; decor?: React.ReactNode}> = ({
+	children,
+	decor,
+}) => (
 	<AbsoluteFill
 		style={{
 			justifyContent: 'center',
@@ -12,12 +16,14 @@ export const LuxLayout: React.FC<{children: React.ReactNode}> = ({children}) => 
 			textAlign: 'center',
 		}}
 	>
+		{decor ? <AbsoluteFill>{decor}</AbsoluteFill> : null}
 		<div
 			style={{
 				display: 'flex',
 				flexDirection: 'column',
 				alignItems: 'center',
 				gap: 26,
+				zIndex: 1,
 			}}
 		>
 			{children}

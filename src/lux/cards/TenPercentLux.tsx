@@ -1,38 +1,45 @@
 import {interpolate, useCurrentFrame} from 'remotion';
 import {EASE_OUT, glow, LUX} from '../lux';
-import {Kicker, LuxLayout, useReveal} from '../LuxScaffold';
+import {Kicker, LuxLayout} from '../LuxScaffold';
+import {Particles, PulseRing, useCountUp, usePop} from '../motion';
 
-// "El 10% de la ganancia" — thin drawing ring around a luminous 10%.
+// "El 10% de la ganancia" — count-up + pulsing rings, more energetic.
 export const TenPercentLux: React.FC = () => {
 	const frame = useCurrentFrame();
-	const hero = useReveal(14, 30);
+	const hero = usePop(8, {damping: 9, stiffness: 160});
+	const count = useCountUp(10, 8, 24);
 
 	const R = 150;
-	const ring = interpolate(frame, [10, 56], [0, 1], {
+	const ring = interpolate(frame, [6, 34], [0, 1], {
 		extrapolateLeft: 'clamp',
 		extrapolateRight: 'clamp',
 		easing: EASE_OUT,
 	});
+	const glowPulse = 14 + (Math.sin(frame * 0.22) * 0.5 + 0.5) * 16;
 
 	return (
-		<LuxLayout>
-			<Kicker start={4}>Mi parte</Kicker>
-			<div style={{position: 'relative', width: 360, height: 360, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-				<svg width={360} height={360} viewBox="0 0 360 360" style={{position: 'absolute', overflow: 'visible'}}>
-					<circle cx="180" cy="180" r={R} fill="none" stroke={LUX.lineDim} strokeWidth="1.5" />
+		<LuxLayout decor={<Particles count={22} seed="ten" />}>
+			<Kicker start={2}>Mi parte</Kicker>
+			<div style={{position: 'relative', width: 380, height: 380, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+				{/* energetic radiating rings */}
+				<PulseRing delay={20} period={36} max={420} />
+				<PulseRing delay={38} period={36} max={420} />
+
+				<svg width={380} height={380} viewBox="0 0 380 380" style={{position: 'absolute', overflow: 'visible'}}>
+					<circle cx="190" cy="190" r={R} fill="none" stroke={LUX.lineDim} strokeWidth="1.5" />
 					<circle
-						cx="180"
-						cy="180"
+						cx="190"
+						cy="190"
 						r={R}
 						fill="none"
 						stroke={LUX.neon}
-						strokeWidth="2"
+						strokeWidth="2.5"
 						strokeLinecap="round"
 						pathLength={1}
 						strokeDasharray={1}
 						strokeDashoffset={1 - ring}
-						transform="rotate(-90 180 180)"
-						style={{filter: glow(10, 0.5)}}
+						transform="rotate(-90 190 190)"
+						style={{filter: glow(12, 0.6)}}
 					/>
 				</svg>
 				<div
@@ -42,11 +49,11 @@ export const TenPercentLux: React.FC = () => {
 						fontWeight: 200,
 						letterSpacing: -4,
 						opacity: hero.opacity,
-						transform: `translateY(${hero.y * 0.4}px)`,
-						filter: glow(18, 0.45),
+						transform: `scale(${hero.scale})`,
+						filter: glow(glowPulse, 0.5),
 					}}
 				>
-					10%
+					{Math.round(count)}%
 				</div>
 			</div>
 			<div style={{color: LUX.silver, fontSize: 42, fontWeight: 300, letterSpacing: 3, opacity: hero.opacity}}>

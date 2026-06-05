@@ -1,48 +1,53 @@
 import {useCurrentFrame} from 'remotion';
 import {glow, LUX} from '../lux';
-import {LuxLayout, useReveal} from '../LuxScaffold';
+import {LuxLayout} from '../LuxScaffold';
+import {AnimatedLetters, Particles, usePop} from '../motion';
 
-// Restrained premium CTA — thin outlined "SABER MÁS" with a gentle breath.
+// Energetic but premium CTA — bouncing outlined button + strong glow pulse.
 export const CtaLux: React.FC = () => {
 	const frame = useCurrentFrame();
-	const top = useReveal(8, 28);
-	const btn = useReveal(20, 30);
+	const top = usePop(4, {damping: 12});
+	const btn = usePop(16, {damping: 8, stiffness: 150});
 
-	const breath = 1 + Math.sin(frame * 0.09) * 0.012;
-	const glowPulse = 0.3 + (Math.sin(frame * 0.09) * 0.5 + 0.5) * 0.25;
+	const bounce = 1 + Math.sin(frame * 0.16) * 0.03;
+	const glowPulse = 0.35 + (Math.sin(frame * 0.16) * 0.5 + 0.5) * 0.45;
+	const arrowX = Math.sin(frame * 0.18) * 8;
 
 	return (
-		<LuxLayout>
-			<div
-				style={{
-					color: LUX.silver,
-					fontSize: 60,
-					fontWeight: 300,
-					letterSpacing: 2,
-					opacity: top.opacity,
-					transform: `translateY(${top.y}px)`,
-				}}
-			>
-				Míralo hasta el final
+		<LuxLayout decor={<Particles count={24} seed="cta" />}>
+			<div style={{opacity: top.opacity, transform: `translateY(${top.y}px)`}}>
+				<div style={{color: LUX.silver, fontSize: 60, fontWeight: 300, letterSpacing: 2}}>
+					Míralo hasta el final
+				</div>
 			</div>
 
 			<div
 				style={{
 					marginTop: 20,
-					padding: '34px 92px',
+					display: 'flex',
+					alignItems: 'center',
+					gap: 18,
+					padding: '34px 84px',
 					borderRadius: 999,
-					border: `1.5px solid rgba(255,255,255,0.6)`,
-					color: LUX.neon,
-					fontSize: 64,
-					fontWeight: 300,
-					letterSpacing: 6,
+					border: `2px solid rgba(255,255,255,0.75)`,
 					opacity: btn.opacity,
-					transform: `translateY(${btn.y}px) scale(${breath})`,
-					boxShadow: `0 0 ${40 * glowPulse}px rgba(255,255,255,${glowPulse})`,
-					filter: glow(6, 0.3),
+					transform: `scale(${btn.scale * bounce})`,
+					boxShadow: `0 0 ${50 * glowPulse}px rgba(255,255,255,${glowPulse})`,
+					filter: glow(8, 0.35),
 				}}
 			>
-				SABER MÁS
+				<AnimatedLetters
+					text="SABER MÁS"
+					start={18}
+					stagger={2}
+					fontSize={64}
+					fontWeight={400}
+					letterSpacing={6}
+					glowPx={6}
+				/>
+				<span style={{color: LUX.neon, fontSize: 56, transform: `translateX(${arrowX}px)`, filter: glow(10, 0.6)}}>
+					→
+				</span>
 			</div>
 		</LuxLayout>
 	);

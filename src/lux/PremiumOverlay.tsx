@@ -1,6 +1,12 @@
 import {CameraMotionBlur} from '@remotion/motion-blur';
-import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
-import {EASE_IN, EASE_OUT, LUX, T} from './lux';
+import {
+	AbsoluteFill,
+	interpolate,
+	spring,
+	useCurrentFrame,
+	useVideoConfig,
+} from 'remotion';
+import {EASE_IN, LUX} from './lux';
 
 // Matte-black backdrop with a faint center vignette.
 const LuxBg: React.FC = () => (
@@ -11,19 +17,25 @@ const LuxBg: React.FC = () => (
 	/>
 );
 
-// Slow, elegant cross-dissolve from the presenter to a fullscreen luxury card
-// and back. A gentle scale push + real motion blur keep it cinematic.
+// Faster, punchier transition: a quick spring pop-in (with overshoot) + snap
+// fade, real motion blur, and a brisk exit. More energetic, less minimalist.
 export const PremiumOverlay: React.FC<{
 	durationInFrames: number;
 	children: React.ReactNode;
 	transition?: number;
-}> = ({durationInFrames, children, transition = T}) => {
+}> = ({durationInFrames, children, transition = 9}) => {
 	const frame = useCurrentFrame();
+	const {fps} = useVideoConfig();
 
-	const enter = interpolate(frame, [0, transition], [0, 1], {
+	// Springy entrance with overshoot.
+	const enter = spring({
+		fps,
+		frame,
+		config: {damping: 13, stiffness: 200, mass: 0.6},
+	});
+	const opacityIn = interpolate(frame, [0, transition * 0.6], [0, 1], {
 		extrapolateLeft: 'clamp',
 		extrapolateRight: 'clamp',
-		easing: EASE_OUT,
 	});
 	const exit = interpolate(
 		frame,
@@ -31,17 +43,19 @@ export const PremiumOverlay: React.FC<{
 		[0, 1],
 		{extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE_IN},
 	);
-	const present = enter * (1 - exit);
+	const present = opacityIn * (1 - exit);
 
-	// Slow push-in that settles, then a subtle drift out.
 	const scale =
-		interpolate(enter, [0, 1], [1.05, 1]) * interpolate(exit, [0, 1], [1, 0.975]);
+		interpolate(enter, [0, 1], [1.16, 1]) * interpolate(exit, [0, 1], [1, 0.94]);
+	const y = (1 - enter) * 40 + exit * -30;
 
 	return (
 		<AbsoluteFill style={{opacity: present}}>
 			<LuxBg />
-			<CameraMotionBlur shutterAngle={180} samples={12}>
-				<AbsoluteFill style={{transform: `scale(${scale})`}}>{children}</AbsoluteFill>
+			<CameraMotionBlur shutterAngle={200} samples={14}>
+				<AbsoluteFill style={{transform: `translateY(${y}px) scale(${scale})`}}>
+					{children}
+				</AbsoluteFill>
 			</CameraMotionBlur>
 		</AbsoluteFill>
 	);
