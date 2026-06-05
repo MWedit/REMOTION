@@ -3,13 +3,14 @@ import {COLORS, FONT} from '../theme';
 import {GoldGlow} from '../WhipOverlay';
 
 // Centred vertical column used by every card.
-export const CardLayout: React.FC<{children: React.ReactNode; glow?: boolean}> = ({
-	children,
-	glow = true,
-}) => (
+export const CardLayout: React.FC<{
+	children: React.ReactNode;
+	glow?: boolean;
+	transparent?: boolean;
+}> = ({children, glow = true, transparent = false}) => (
 	<AbsoluteFill
 		style={{
-			backgroundColor: COLORS.bg,
+			backgroundColor: transparent ? 'transparent' : COLORS.bg,
 			justifyContent: 'center',
 			alignItems: 'center',
 			fontFamily: FONT,

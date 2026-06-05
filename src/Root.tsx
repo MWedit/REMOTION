@@ -3,10 +3,20 @@ import {HelloWorld} from './HelloWorld';
 import {PersonasReel} from './personas/PersonasReel';
 import {PersonasGlobe} from './personas/PersonasGlobe';
 import {VslEdit} from './vsl/VslEdit';
+import {VslConnected} from './vsl/VslConnected';
 
 export const Root: React.FC = () => {
 	return (
 		<>
+			<Composition
+				id="VslConnected"
+				component={VslConnected}
+				durationInFrames={901}
+				width={1080}
+				height={1920}
+				fps={25}
+				defaultProps={{}}
+			/>
 			<Composition
 				id="VslEdit"
 				component={VslEdit}

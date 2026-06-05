@@ -61,3 +61,44 @@ export const CursorIcon: React.FC<IconProps> = ({size = 64, stroke = 2.4}) => (
 		<path d="M14 10l9 28 4-12 12-4z" fill={COLORS.gold} />
 	</svg>
 );
+
+export const PhoneIcon: React.FC<IconProps> = ({size = 64, stroke = 2.4}) => (
+	<svg {...base(size)} strokeWidth={stroke}>
+		<rect x="15" y="6" width="18" height="36" rx="4" />
+		<path d="M21 10h6M22 38h4" />
+	</svg>
+);
+
+export const ShieldCheckIcon: React.FC<IconProps> = ({size = 64, stroke = 2.4}) => (
+	<svg {...base(size)} strokeWidth={stroke}>
+		<path d="M24 5l15 5v10c0 11-7 18-15 23-8-5-15-12-15-23V10z" />
+		<path d="M16 23l6 6 11-12" />
+	</svg>
+);
+
+export const GiftIcon: React.FC<IconProps> = ({size = 64, stroke = 2.4}) => (
+	<svg {...base(size)} strokeWidth={stroke}>
+		<rect x="8" y="18" width="32" height="22" rx="3" />
+		<path d="M6 18h36v8H6zM24 18v22" />
+		<path d="M24 18c-3-9-12-9-12-3 0 3 4 3 12 3zM24 18c3-9 12-9 12-3 0 3-4 3-12 3z" />
+	</svg>
+);
+
+export const CrossIcon: React.FC<IconProps & {color?: string}> = ({
+	size = 48,
+	stroke = 3,
+	color = '#E0584F',
+}) => (
+	<svg
+		width={size}
+		height={size}
+		viewBox="0 0 48 48"
+		fill="none"
+		stroke={color}
+		strokeLinecap="round"
+		strokeWidth={stroke}
+	>
+		<circle cx="24" cy="24" r="19" />
+		<path d="M16 16l16 16M32 16L16 32" />
+	</svg>
+);
