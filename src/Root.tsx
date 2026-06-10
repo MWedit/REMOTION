@@ -5,10 +5,20 @@ import {PersonasGlobe} from './personas/PersonasGlobe';
 import {VslEdit} from './vsl/VslEdit';
 import {VslConnected} from './vsl/VslConnected';
 import {VslLux} from './lux/VslLux';
+import {VslLux2} from './lux/VslLux2';
 
 export const Root: React.FC = () => {
 	return (
 		<>
+			<Composition
+				id="VslLux2"
+				component={VslLux2}
+				durationInFrames={634}
+				width={1080}
+				height={1920}
+				fps={25}
+				defaultProps={{}}
+			/>
 			<Composition
 				id="VslLux"
 				component={VslLux}

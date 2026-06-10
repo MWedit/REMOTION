@@ -4,7 +4,9 @@ import {LuxLayout} from '../LuxScaffold';
 import {AnimatedLetters, Particles, usePop} from '../motion';
 
 // Energetic but premium CTA — bouncing outlined button + strong glow pulse.
-export const CtaLux: React.FC = () => {
+export const CtaLux: React.FC<{topLine?: string}> = ({
+	topLine = 'Míralo hasta el final',
+}) => {
 	const frame = useCurrentFrame();
 	const top = usePop(4, {damping: 12});
 	const btn = usePop(16, {damping: 8, stiffness: 150});
@@ -17,7 +19,7 @@ export const CtaLux: React.FC = () => {
 		<LuxLayout decor={<Particles count={24} seed="cta" />}>
 			<div style={{opacity: top.opacity, transform: `translateY(${top.y}px)`}}>
 				<div style={{color: LUX.silver, fontSize: 60, fontWeight: 300, letterSpacing: 2}}>
-					Míralo hasta el final
+					{topLine}
 				</div>
 			</div>
 
