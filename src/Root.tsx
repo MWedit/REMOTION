@@ -14,10 +14,20 @@ import {
 	UnclaimedShort,
 	UnclaimedStory,
 } from './foia/Unclaimed';
+import {NO_COMMIT_DURATION, NoCommitShort} from './foia/NoCommit';
 
 export const Root: React.FC = () => {
 	return (
 		<>
+			<Composition
+				id="NoCommitShort"
+				component={NoCommitShort}
+				durationInFrames={NO_COMMIT_DURATION}
+				width={1080}
+				height={1920}
+				fps={30}
+				defaultProps={{}}
+			/>
 			<Composition
 				id="UnclaimedShort"
 				component={UnclaimedShort}
