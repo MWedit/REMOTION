@@ -6,10 +6,21 @@ import {VslEdit} from './vsl/VslEdit';
 import {VslConnected} from './vsl/VslConnected';
 import {VslLux} from './lux/VslLux';
 import {VslLux2} from './lux/VslLux2';
+import {FOIA_DURATION, FoiaStory} from './foia/FoiaStory';
+import './foia/theme';
 
 export const Root: React.FC = () => {
 	return (
 		<>
+			<Composition
+				id="FoiaStory"
+				component={FoiaStory}
+				durationInFrames={FOIA_DURATION}
+				width={1080}
+				height={1920}
+				fps={30}
+				defaultProps={{}}
+			/>
 			<Composition
 				id="VslLux2"
 				component={VslLux2}
