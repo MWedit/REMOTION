@@ -8,11 +8,25 @@ import {VslLux} from './lux/VslLux';
 import {VslLux2} from './lux/VslLux2';
 import {FOIA_DURATION, FoiaStory} from './foia/FoiaStory';
 import './foia/theme';
-import {UNCLAIMED_DURATION, UnclaimedStory} from './foia/Unclaimed';
+import {
+	UNCLAIMED_DURATION,
+	UNCLAIMED_SHORT_DURATION,
+	UnclaimedShort,
+	UnclaimedStory,
+} from './foia/Unclaimed';
 
 export const Root: React.FC = () => {
 	return (
 		<>
+			<Composition
+				id="UnclaimedShort"
+				component={UnclaimedShort}
+				durationInFrames={UNCLAIMED_SHORT_DURATION}
+				width={1080}
+				height={1920}
+				fps={30}
+				defaultProps={{}}
+			/>
 			<Composition
 				id="UnclaimedStory"
 				component={UnclaimedStory}

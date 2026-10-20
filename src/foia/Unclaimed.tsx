@@ -128,18 +128,20 @@ const Vault: React.FC<{size?: number; spin: number; lock: number}> = ({size = 72
 };
 
 // Bills sucked into the vault centre.
-const Bills: React.FC<{start: number; cx: number; cy: number; count?: number}> = ({
-	start,
-	cx,
-	cy,
-	count = 14,
-}) => {
+const Bills: React.FC<{
+	start: number;
+	cx: number;
+	cy: number;
+	count?: number;
+	stagger?: number;
+	travel?: number;
+}> = ({start, cx, cy, count = 14, stagger = 3, travel = 26}) => {
 	const frame = useCurrentFrame();
 	return (
 		<>
 			{new Array(count).fill(true).map((_, i) => {
-				const t0 = start + i * 3;
-				const p = interpolate(frame, [t0, t0 + 26], [0, 1], {...clamp, easing: Easing.in(Easing.quad)});
+				const t0 = start + i * stagger;
+				const p = interpolate(frame, [t0, t0 + travel], [0, 1], {...clamp, easing: Easing.in(Easing.quad)});
 				if (p <= 0 || p >= 1) return null;
 				const sx = random(`bx-${i}`) * 1080;
 				const sy = -120 - random(`by-${i}`) * 200;
@@ -176,13 +178,37 @@ const Bills: React.FC<{start: number; cx: number; cy: number; count?: number}> =
 	);
 };
 
+// Timing knobs so the same scenes can run at full length or in a tight cut.
+type UnclaimedTiming = {countAt: [number, number]; stampAt: number; text: [number, number]};
+type VaultTiming = {billsAt: number; billStagger: number; billTravel: number; text: [number, number]};
+type LockedTiming = {
+	spinEnd: number;
+	lockAt: number;
+	stampAt: number;
+	reveal: number;
+	beat: number; // spacing multiplier between the three closing lines
+	text: [number, number];
+};
+
+const LONG = {
+	unclaimed: {countAt: [8, 42], stampAt: 48, text: [8, 5]} as UnclaimedTiming,
+	vault: {billsAt: 16, billStagger: 3, billTravel: 26, text: [6, 4]} as VaultTiming,
+	locked: {spinEnd: 22, lockAt: 20, stampAt: 32, reveal: 70, beat: 1, text: [4, 4]} as LockedTiming,
+};
+
+const SHORT = {
+	unclaimed: {countAt: [4, 22], stampAt: 24, text: [2, 3]} as UnclaimedTiming,
+	vault: {billsAt: 6, billStagger: 2, billTravel: 18, text: [2, 2.5]} as VaultTiming,
+	locked: {spinEnd: 10, lockAt: 8, stampAt: 14, reveal: 30, beat: 0.5, text: [2, 2.5]} as LockedTiming,
+};
+
 // 1 — "Any unclaimed amount"
-const SceneUnclaimed: React.FC = () => {
+const SceneUnclaimed: React.FC<{t?: UnclaimedTiming}> = ({t = LONG.unclaimed}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
 	const enter = spring({fps, frame, config: {damping: 15, stiffness: 120, mass: 0.9}});
-	const amount = interpolate(frame, [8, 42], [0, 4827.16], {...clamp, easing: Easing.out(Easing.cubic)});
-	const shake = useShake(48, 22, 12);
+	const amount = interpolate(frame, t.countAt, [0, 4827.16], {...clamp, easing: Easing.out(Easing.cubic)});
+	const shake = useShake(t.stampAt, 22, 12);
 
 	return (
 		<AbsoluteFill style={{transform: `translate(${shake.x}px, ${shake.y}px) rotate(${shake.r}deg)`}}>
@@ -191,14 +217,14 @@ const SceneUnclaimed: React.FC = () => {
 				<div style={{position: 'relative', transform: `translateX(${(1 - enter) * 1200}px) rotate(${-3 + (1 - enter) * 8}deg)`}}>
 					<Check amount={amount} />
 					<div style={{position: 'absolute', left: 230, top: 40}}>
-						<Stamp at={48} text="UNCLAIMED" rotate={-9} />
+						<Stamp at={t.stampAt} text="UNCLAIMED" rotate={-9} />
 					</div>
 				</div>
 			</AbsoluteFill>
 			<TextZone>
 				<KineticLine
-					start={8}
-					stagger={5}
+					start={t.text[0]}
+					stagger={t.text[1]}
 					size={96}
 					words={[{t: 'Any'}, {t: 'unclaimed', mark: 'yellow'}, {t: 'amount'}]}
 				/>
@@ -239,7 +265,7 @@ const VaultPlate: React.FC<{opacity: number}> = ({opacity}) => (
 );
 
 // 2 — "goes to a federal reserve account"
-const SceneVault: React.FC = () => {
+const SceneVault: React.FC<{t?: VaultTiming}> = ({t = LONG.vault}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
 	const rise = spring({fps, frame, config: {damping: 16, stiffness: 110, mass: 0.9}});
@@ -254,11 +280,17 @@ const SceneVault: React.FC = () => {
 					<Vault size={VAULT_SIZE} spin={spin} lock={0} />
 				</div>
 			</AbsoluteFill>
-			<Bills start={16} cx={540} cy={VAULT_TOP + VAULT_SIZE / 2} />
+			<Bills
+				start={t.billsAt}
+				stagger={t.billStagger}
+				travel={t.billTravel}
+				cx={540}
+				cy={VAULT_TOP + VAULT_SIZE / 2}
+			/>
 			<TextZone>
 				<KineticLine
-					start={6}
-					stagger={4}
+					start={t.text[0]}
+					stagger={t.text[1]}
 					size={86}
 					words={[
 						{t: 'goes'},
@@ -275,23 +307,27 @@ const SceneVault: React.FC = () => {
 };
 
 // 3 — "— inaccessible to you permanently."
-const SceneLocked: React.FC = () => {
+const SceneLocked: React.FC<{t?: LockedTiming}> = ({t = LONG.locked}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
+	const slam = t.lockAt + 6;
+	const third = t.reveal + 18 * t.beat;
 	// wheel whips around then stops dead; bolts slam home
-	const spinP = interpolate(frame, [0, 22], [0, 1], {...clamp, easing: Easing.out(Easing.cubic)});
+	const spinP = interpolate(frame, [0, t.spinEnd], [0, 1], {...clamp, easing: Easing.out(Easing.cubic)});
 	const spin = 147 + spinP * 540;
-	const lock = interpolate(frame, [20, 26], [0, 1], clamp);
-	const shake = useShake(26, 36, 16);
-	const shake2 = useShake(70, 40, 18);
-	const flash = interpolate(frame, [26, 28, 38], [0, 0.6, 0], clamp) + interpolate(frame, [70, 72, 84], [0, 0.85, 0], clamp);
-	const back = interpolate(frame, [64, 86], [0, 1], {...clamp, easing: Easing.out(Easing.cubic)});
+	const lock = interpolate(frame, [t.lockAt, slam], [0, 1], clamp);
+	const shake = useShake(slam, 36, 16);
+	const shake2 = useShake(t.reveal, 40, 18);
+	const flash =
+		interpolate(frame, [slam, slam + 2, slam + 12], [0, 0.6, 0], clamp) +
+		interpolate(frame, [t.reveal, t.reveal + 2, t.reveal + 14], [0, 0.85, 0], clamp);
+	const back = interpolate(frame, [t.reveal - 6, t.reveal + 16], [0, 1], {...clamp, easing: Easing.out(Easing.cubic)});
 	const textIn = (at: number) =>
 		spring({fps, frame: frame - at, config: {damping: 10, stiffness: 220, mass: 0.6}});
-	const t1 = textIn(70);
-	const t2 = textIn(78);
-	const t3 = textIn(88);
-	const glitch = frame >= 88 && frame < 102 ? (random(`ug-${frame}`) - 0.5) * 26 : 0;
+	const t1 = textIn(t.reveal);
+	const t2 = textIn(t.reveal + 8 * t.beat);
+	const t3 = textIn(third);
+	const glitch = frame >= third && frame < third + 14 ? (random(`ug-${frame}`) - 0.5) * 26 : 0;
 	const sx = shake.x + shake2.x;
 	const sy = shake.y + shake2.y;
 
@@ -310,7 +346,7 @@ const SceneLocked: React.FC = () => {
 				<div style={{position: 'relative'}}>
 					<Vault size={VAULT_SIZE} spin={spin} lock={lock} />
 					<div style={{position: 'absolute', left: 120, top: 270}}>
-						<Stamp at={32} text="LOCKED" sub="NO ACCESS" rotate={-11} />
+						<Stamp at={t.stampAt} text="LOCKED" sub="NO ACCESS" rotate={-11} />
 					</div>
 				</div>
 			</AbsoluteFill>
@@ -318,15 +354,15 @@ const SceneLocked: React.FC = () => {
 			<TextZone>
 				<div style={{opacity: 1 - back}}>
 					<KineticLine
-						start={4}
-						stagger={4}
+						start={t.text[0]}
+						stagger={t.text[1]}
 						size={86}
 						words={[{t: '—'}, {t: 'inaccessible'}, {t: 'to'}, {t: 'you'}]}
 					/>
 				</div>
 			</TextZone>
 
-			{frame >= 70 ? (
+			{frame >= t.reveal ? (
 				<AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', fontFamily: IMPACT, textAlign: 'center'}}>
 					<div style={{color: C.white, fontSize: 190, lineHeight: 0.95, transform: `scale(${interpolate(t1, [0, 1], [2.6, 1])})`, opacity: interpolate(t1, [0, 0.3], [0, 1], clamp), textShadow: '0 10px 60px rgba(0,0,0,0.85)'}}>
 						INACCESSIBLE
@@ -372,6 +408,30 @@ export const UnclaimedStory: React.FC = () => (
 			{/* same vault framing, so a hard cut reads as one continuous shot */}
 			<TransitionSeries.Sequence durationInFrames={150}>
 				<SceneLocked />
+			</TransitionSeries.Sequence>
+		</TransitionSeries>
+		<FilmLook />
+	</AbsoluteFill>
+);
+
+// Tight 5-second cut (150 frames @ 30fps) paced to the spoken line.
+export const UNCLAIMED_SHORT_DURATION = 46 + 46 + 64 - 6;
+
+export const UnclaimedShort: React.FC = () => (
+	<AbsoluteFill style={{backgroundColor: '#0B0B0C'}}>
+		<TransitionSeries>
+			<TransitionSeries.Sequence durationInFrames={46}>
+				<SceneUnclaimed t={SHORT.unclaimed} />
+			</TransitionSeries.Sequence>
+			<TransitionSeries.Transition
+				timing={linearTiming({durationInFrames: 6})}
+				presentation={slide({direction: 'from-bottom'})}
+			/>
+			<TransitionSeries.Sequence durationInFrames={46}>
+				<SceneVault t={SHORT.vault} />
+			</TransitionSeries.Sequence>
+			<TransitionSeries.Sequence durationInFrames={64}>
+				<SceneLocked t={SHORT.locked} />
 			</TransitionSeries.Sequence>
 		</TransitionSeries>
 		<FilmLook />
